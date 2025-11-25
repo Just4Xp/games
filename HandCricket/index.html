@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hand Cricket (1–10)</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f7f7f7;
+    padding: 20px;
+}
+
+h1 {
+    color: #2b7a78;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 18px;
+    border: none;
+    background: #3aafa9;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #2b7a78;
+}
+
+#log {
+    margin-top: 20px;
+    white-space: pre-line;
+    font-size: 18px;
+    padding: 15px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    background: #def2f1;
+    border-radius: 10px;
+    min-height: 150px;
+}
+</style>
+</head>
+<body>
+
+<h1>🏏 Hand Cricket</h1>
+<p>Select a number between <strong>1 and 10</strong> to play.</p>
+
+<div id="buttons"></div>
+<div id="log"></div>
+
+<script>
+let userScore = 0;
+let compScore = 0;
+let phase = "batting"; // batting → bowling
+
+function log(msg) {
+    document.getElementById("log").innerText += msg + "\n";
+}
+
+function compChoice() {
+    return Math.floor(Math.random() * 10) + 1;
+}
+
+function play(num) {
+    let comp = compChoice();
+    log(`You: ${num} | Computer: ${comp}`);
+
+    if (phase === "batting") {
+        if (num === comp) {
+            log("❌ You are OUT!");
+            log(`Your Total Score: ${userScore}\n`);
+            log("🎯 Bowling Time! Try to stop the computer.\n");
+            phase = "bowling";
+            return;
+        }
+        userScore += num;
+        log(`Your Score: ${userScore}`);
+    } else {
+        if (num === comp) {
+            log("🎉 You got the wicket!");
+            log(`Computer Final Score: ${compScore}`);
+            endGame();
+            return;
+        }
+        compScore += comp;
+        log(`Computer Score: ${compScore}`);
+
+        if (compScore > userScore) {
+            endGame();
+        }
+    }
+}
+
+function endGame() {
+    if (compScore > userScore) log("\n💥 Computer Wins!");
+    else if (compScore < userScore) log("\n🎉 You Win!");
+    else log("\n🤝 It's a Tie!");
+}
+
+window.onload = () => {
+    let container = document.getElementById("buttons");
+    for (let i = 1; i <= 10; i++) {
+        let btn = document.createElement("button");
+        btn.textContent = i;
+        btn.onclick = () => play(i);
+        container.appendChild(btn);
+    }
+};
+
+// Back to Hub
+function goBack() {
+    location.href = "../index.html"; // assumes hub is one folder up
+}
+</script>
+
+<h3>HOW TO PLAY:</h3>
+<p>JUST FIGURE IT OUT!</p>
+<h4>NOTE:</h4>
+<p>Please reload the page after the match is OVER!</p> 
+<!-- Back to Hub button -->
+<button onclick="goBack()" style="margin-top:20px; background:#ff6f61; color:white; border-radius:6px;">⬅ Back to Hub</button>
+
+</body>
+</html>
