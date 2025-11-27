@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hand Cricket (1–10)</title>
+
+<style>
+/* ===== BODY & GENERAL ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: #f0f0f0;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ===== HEADINGS ===== */
+h1 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px #00000044;
+}
+
+h3 {
+    margin-top: 20px;
+    color: #ffffffcc;
+}
+
+/* ===== BUTTONS ===== */
+button {
+    padding: 12px 20px;
+    margin: 6px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    min-width: 50px;
+    max-width: 60px;
+}
+
+#buttons button {
+    background: #ff9800;
+    color: white;
+}
+
+#buttons button:hover {
+    background: #e68a00;
+}
+
+#backButton {
+    background: #2196F3;
+    color: white;
+    min-width: 120px;
+    margin-top: 10px;
+}
+
+#backButton:hover {
+    background: #1976D2;
+}
+
+#restartButton {
+    background: #4CAF50;
+    color: white;
+    min-width: 120px;
+    margin-top: 10px;
+}
+
+#restartButton:hover {
+    background: #43a047;
+}
+
+/* ===== LOG BOX ===== */
+#log {
+    margin-top: 20px;
+    white-space: pre-line;
+    font-size: 18px;
+    padding: 20px;
+    width: 90%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    min-height: 180px;
+    overflow-y: auto;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+/* ===== INSTRUCTIONS ===== */
+#instructions {
+    background: rgba(255,255,255,0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    max-width: 500px;
+    text-align: center;
+    color: #ffffffcc;
+}
+</style>
+</head>
+<body>
+
+<h1>🏏 Hand Cricket</h1>
+<p>Select a number between <strong>1 and 10</strong> to play.</p>
+
+<div id="buttons"></div>
+<div id="log"></div>
+
+<div id="instructions">
+    <h3>HOW TO PLAY:</h3>
+    <p>Choose a number. If it matches the computer's number, you're out or take a wicket. Try to beat the computer!</p>
+</div>
+
+<!-- Buttons -->
+<button id="restartButton">🔄 Restart</button>
+<button id="backButton">⬅ Back to Hub</button>
+
+<script>
+let userScore = 0;
+let compScore = 0;
+let phase = "batting"; // batting → bowling
+
+function log(msg) {
+    const logBox = document.getElementById("log");
+    logBox.innerText += msg + "\n";
+    logBox.scrollTop = logBox.scrollHeight; // auto scroll
+}
+
+function compChoice() {
+    return Math.floor(Math.random() * 10) + 1;
+}
+
+function play(num) {
+    let comp = compChoice();
+    log(`You: ${num} | Computer: ${comp}`);
+
+    if (phase === "batting") {
+        if (num === comp) {
+            log("❌ You are OUT!");
+            log(`Your Total Score: ${userScore}\n`);
+            log("🎯 Bowling Time! Try to stop the computer.\n");
+            phase = "bowling";
+            return;
+        }
+        userScore += num;
+        log(`Your Score: ${userScore}`);
+    } else {
+        if (num === comp) {
+            log("🎉 You got the wicket!");
+            log(`Computer Final Score: ${compScore}`);
+            endGame();
+            return;
+        }
+        compScore += comp;
+        log(`Computer Score: ${compScore}`);
+
+        if (compScore > userScore) {
+            endGame();
+        }
+    }
+}
+
+function endGame() {
+    if (compScore > userScore) log("\n💥 Computer Wins!");
+    else if (compScore < userScore) log("\n🎉 You Win!");
+    else log("\n🤝 It's a Tie!");
+}
+
+function restartGame() {
+    userScore = 0;
+    compScore = 0;
+    phase = "batting";
+    document.getElementById("log").innerText = "";
+    log("🔄 Game restarted. Start batting!");
+}
+
+window.onload = () => {
+    let container = document.getElementById("buttons");
+    for (let i = 1; i <= 10; i++) {
+        let btn = document.createElement("button");
+        btn.textContent = i;
+        btn.onclick = () => play(i);
+        container.appendChild(btn);
+    }
+};
+
+// Back to Hub
+document.getElementById("backButton").addEventListener("click", () => {
+    location.href = "../index.html"; // adjust path if hub is elsewhere
+});
+
+// Restart
+document.getElementById("restartButton").addEventListener("click", restartGame);
+</script>
+
+</body>
+</html>
