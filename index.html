@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Hub</title>
+<style>
+/* ===== BODY & BACKGROUND ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: #000;
+    overflow-x: hidden;
+    color: #fff;
+}
+
+/* Star background */
+#stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: transparent;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.3; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ===== HEADER ===== */
+header {
+    position: relative;
+    margin-top: 50px;
+    text-align: center;
+}
+
+#hub-title {
+    font-size: 3rem;
+    color: #00ffff; /* Neon cyan to blend with cosmic theme */
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00cccc, 0 0 30px #00aaaa;
+    margin: 0;
+    display: inline-block;
+}
+
+/* ===== GAME BUTTONS ===== */
+.game-btn {
+    display: block;
+    width: 280px;
+    padding: 18px;
+    margin: 20px 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 12px;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6), 0 0 15px rgba(255,255,255,0.2) inset;
+    color: #fff;
+}
+
+/* Cosmic colors for buttons */
+.game-btn:nth-child(1) { background: linear-gradient(145deg, #0ff, #0aa); }
+.game-btn:nth-child(2) { background: linear-gradient(145deg, #ff1493, #c71585); }
+.game-btn:nth-child(3) { background: linear-gradient(145deg, #32cd32, #228b22); }
+.game-btn:nth-child(4) { background: linear-gradient(145deg, #ffa500, #ff8c00); }
+
+/* Hover effect */
+.game-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(255,255,255,0.8), 0 0 25px rgba(255,255,255,0.3) inset;
+}
+
+/* Floating animation for buttons */
+@keyframes floatButton {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+.game-btn { animation: floatButton 4s ease-in-out infinite; }
+
+/* ===== FOOTER ===== */
+footer {
+    margin-top: auto;
+    padding: 15px 0;
+    font-size: 0.9rem;
+    color: #ffffff88;
+    text-align: center;
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width: 500px){
+    .game-btn { width: 90%; font-size: 1rem; padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Star background -->
+<div id="stars"></div>
+
+<!-- Header -->
+<header>
+    <h1 id="hub-title">🎮 Game Hub</h1>
+</header>
+
+<p>Play your favorite games!</p>
+
+<!-- Game Buttons -->
+<a href="./tic-tac-toe/index.html" class="game-btn">❌ Tic Tac Toe</a>
+<a href="./clicker/index.html" class="game-btn">🖱️ Clicker</a>
+<a href="./hand-cricket/index.html" class="game-btn">🏏 Hand Cricket</a>
+<a href="./rock-paper-scissors/index.html" class="game-btn">🪨 Rock Paper Scissors</a>
+
+<footer>Made with ❤️ | GitHub Game Hub</footer>
+
+<script>
+// Generate random stars
+const starCount = 150;
+const starsContainer = document.getElementById('stars');
+for(let i=0;i<starCount;i++){
+    const star = document.createElement('div');
+    star.classList.add('star');
+    star.style.top = Math.random()*100 + '%';
+    star.style.left = Math.random()*100 + '%';
+    star.style.width = Math.random()*2 + 1 + 'px';
+    star.style.height = star.style.width;
+    star.style.animationDuration = (Math.random()*3+1) + 's';
+    starsContainer.appendChild(star);
+}
+</script>
+
+</body>
+</html>
