@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Paper Scissors</title>
+<style>
+/* ===== BODY & GENERAL ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #ffffff;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ===== HEADINGS ===== */
+h1 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px #00000044;
+}
+
+/* ===== BUTTONS ===== */
+button {
+    padding: 15px 25px;
+    margin: 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    min-width: 100px;
+    color: white;
+}
+
+/* Choice buttons */
+.choice-btn {
+    background: #ff9800;
+}
+
+.choice-btn:hover {
+    background: #e68a00;
+}
+
+/* Back to Hub button */
+#backButton {
+    background: #2196F3;
+    margin-top: 20px;
+}
+
+#backButton:hover {
+    background: #1976D2;
+}
+
+/* Result box */
+#result {
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    background: rgba(255,255,255,0.2);
+    padding: 15px 20px;
+    border-radius: 12px;
+    max-width: 350px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+/* Instructions */
+#instructions {
+    margin-top: 15px;
+    font-size: 16px;
+    color: #ffffffcc;
+    max-width: 400px;
+}
+</style>
+</head>
+<body>
+
+<h1>🪨 Rock Paper Scissors</h1>
+<div id="instructions">Choose your move and see if you can beat the computer!</div>
+
+<!-- Choice Buttons -->
+<div>
+    <button class="choice-btn" onclick="play('Rock')">🪨 Rock</button>
+    <button class="choice-btn" onclick="play('Paper')">📄 Paper</button>
+    <button class="choice-btn" onclick="play('Scissors')">✂️ Scissors</button>
+</div>
+
+<!-- Result Display -->
+<div id="result"></div>
+
+<!-- Back to Hub -->
+<button id="backButton" onclick="goBack()">⬅ Back to Hub</button>
+
+<script>
+function play(playerChoice) {
+    const choices = ['Rock', 'Paper', 'Scissors'];
+    const computerChoice = choices[Math.floor(Math.random() * 3)];
+
+    let result = '';
+
+    if(playerChoice === computerChoice){
+        result = "🤝 It's a Tie!";
+    } else if (
+        (playerChoice === 'Rock' && computerChoice === 'Scissors') ||
+        (playerChoice === 'Paper' && computerChoice === 'Rock') ||
+        (playerChoice === 'Scissors' && computerChoice === 'Paper')
+    ) {
+        result = "🎉 You Win!";
+    } else {
+        result = "💥 Computer Wins!";
+    }
+
+    document.getElementById('result').innerHTML = `
+        You chose: <strong>${playerChoice}</strong><br>
+        Computer chose: <strong>${computerChoice}</strong><br>
+        ${result}
+    `;
+}
+
+// Go back to hub page
+function goBack() {
+    location.href = "../index.html"; // adjust if hub is in another folder
+}
+</script>
+
+</body>
+</html>
