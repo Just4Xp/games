@@ -909,6 +909,8 @@
   window._nsd_v2 = {
     spawnAsteroid, spawnPowerup, getState: ()=>({score,high,lives,level,wave,asteroidsLength:asteroids.length,powerupsLength:powerups.length})
   };
+  <!-- Back to Hub -->
+<button id="backButton" onclick="goBack()">⬅ Back to Hub</button>
   // Back to hub
 backHubButton.addEventListener('click', () => {
   location.href = "../index.html"; // Adjust if your hub is in a different folder
