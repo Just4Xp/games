@@ -885,7 +885,8 @@
   startBtn.addEventListener('click', startGame);
   pauseBtn.addEventListener('click', togglePause);
   restartBtn.addEventListener('click', restartGame);
-
+  <button id="backHub">⬅ Back to Hub</button>
+  
   // initial idle
   resetCoreState();
 
@@ -909,7 +910,10 @@
   window._nsd_v2 = {
     spawnAsteroid, spawnPowerup, getState: ()=>({score,high,lives,level,wave,asteroidsLength:asteroids.length,powerupsLength:powerups.length})
   };
-
+// Back to hub
+backHubButton.addEventListener('click', () => {
+  location.href = "../index.html"; // Adjust if your hub is in a different folder
+});
 })();
 </script>
 </body>
