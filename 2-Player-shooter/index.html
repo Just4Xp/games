@@ -48,7 +48,7 @@ window.addEventListener("keydown", e => {
             dx:p1.dx === 0 && p1.dy === 0 ? 5 : p1.dx * 2,
             dy:p1.dx === 0 && p1.dy === 0 ? 0 : p1.dy * 2 });
     }
-    if(e.key === "Shift"){
+    if(e.key === "Enter"){
         bullets.push({ x:p2.x, y:p2.y, size:5, color:'#f88', owner:2,
             dx:p2.dx === 0 && p2.dy === 0 ? -5 : p2.dx * 2,
             dy:p2.dx === 0 && p2.dy === 0 ? 0 : p2.dy * 2 });
