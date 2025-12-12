@@ -1,151 +1,317 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>2-Player Shooter</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tank Arena</title>
 <style>
-    body { margin:0; background:#000; display:flex; justify-content:center; align-items:center; height:100vh; }
-    canvas { background:#111; border:3px solid #0f0; border-radius:10px; }
-    #overlay {
-        position:fixed; inset:0; background:rgba(0,0,0,0.8);
-        display:none; justify-content:center; align-items:center;
-        flex-direction:column; color:#0f0; font-family:Arial;
-    }
-    button {
-        margin-top:20px; padding:10px 25px; font-size:20px; border:none;
-        background:#0f0; color:#000; border-radius:10px; cursor:pointer;
-    }
+:root{--bg:#0b0f14;--panel:#0f1720;--accent:#28c76f;--danger:#ff6b6b;--muted:#96a0aa}
+*{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#061018 0%, #0b0f14 100%);color:#e6eef6}
+.container{display:flex;flex-direction:column;align-items:center;gap:12px;padding:14px}
+.header{width:100%;max-width:1280px;display:flex;justify-content:space-between;align-items:center}
+.title{font-weight:700;font-size:20px;letter-spacing:0.6px}
+.controls-row{display:flex;gap:8px;align-items:center}
+.button{background:linear-gradient(180deg,#1b2330,#141820);border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:#d9e6f2;cursor:pointer}
+.button:active{transform:translateY(1px)}
+.canvas-wrap{width:100%;max-width:1280px; background:linear-gradient(180deg,#091219,#071018);padding:12px;border-radius:12px;box-shadow:0 10px 30px rgba(2,6,10,0.6)}
+#game{display:block;width:100%;height:auto;border-radius:8px;background:#081018}
+.hud{display:flex;justify-content:space-between;margin-top:8px}
+.hud .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:8px 12px;border-radius:8px;min-width:220px}
+.info{font-size:13px;color:var(--muted)}
+.health-bar{width:220px;height:12px;background:rgba(0,0,0,0.35);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.04)}
+.health-fill{height:100%;background:linear-gradient(90deg,var(--accent),#19b77a);width:100%}
+.ammo{display:flex;gap:6px;margin-top:6px}
+.ammo .cell{width:28px;height:8px;background:rgba(255,255,255,0.06);border-radius:3px}
+.ammo .cell.full{background:linear-gradient(90deg,#f6c84c,#ffd76a)}
+.center-ui{display:flex;gap:8px;align-items:center}
+.powerups{display:flex;gap:6px;align-items:center}
+.powerup{padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);font-size:12px}
+.overlay{position:absolute;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center}
+.win{background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);padding:20px;border-radius:12px;text-align:center}
+.win h2{font-size:36px;margin:0}
+.win .button{margin-top:12px}
+
+/* mobile controls shown only on narrow screens */
+.mobile-controls{display:none}
+@media (max-width:900px){
+  .container{padding:8px}
+  .header{flex-direction:column;align-items:flex-start;gap:8px}
+  .canvas-wrap{padding:8px}
+  .mobile-controls{display:block;position:relative;margin-top:8px}
+  .touch-pad{position:fixed;bottom:18px;width:46%;height:140px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));left:8px;padding:8px}
+  .touch-pad.right{right:8px;left:auto}
+  .touch-row{display:flex;gap:8px;justify-content:center}
+  .touch-btn{width:64px;height:48px;border-radius:10px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;font-weight:700}
+  .touch-shoot{position:fixed;right:24px;bottom:170px;width:70px;height:70px;border-radius:999px;background:linear-gradient(180deg,#ff6b6b,#ff4b4b);display:flex;align-items:center;justify-content:center;font-weight:700}
+}
 </style>
 </head>
 <body>
-<canvas id="game" width="900" height="600"></canvas>
+<div class="container">
+  <div class="header">
+    <div class="title">Tank Arena — Final</div>
+    <div class="controls-row">
+      <div class="info">Controls — P1: W/A/S/D + Shift (shoot) | P2: Arrows + Enter (shoot)</div>
+      <button id="restartBtn" class="button">Restart</button>
+      <button id="toggleHints" class="button">Toggle Hints</button>
+    </div>
+  </div>
 
-<div id="overlay">
-    <h1 id="winnerText"></h1>
-    <button onclick="restart()">Restart</button>
+  <div class="canvas-wrap" style="position:relative">
+    <canvas id="game" width="1200" height="700"></canvas>
+    <div id="winOverlay" class="overlay" style="display:none"><div class="win"><h2 id="winText">Player 1 Wins!</h2><button id="restartOverlay" class="button">Restart</button></div></div>
+  </div>
+
+  <div class="hud" style="max-width:1200px">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between"><div style="font-weight:700">Player 1</div><div class="info">Green</div></div>
+      <div class="health-bar" id="p1HealthBar"><div class="health-fill" style="width:100%"></div></div>
+      <div class="ammo" id="p1Ammo"></div>
+    </div>
+    <div class="panel center-ui">
+      <div class="powerups" id="powerupList"></div>
+      <div class="info">Map: Bigger arena with obstacles — pick up powerups!</div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between"><div style="font-weight:700">Player 2</div><div class="info">Red</div></div>
+      <div class="health-bar" id="p2HealthBar"><div class="health-fill" style="width:100%"></div></div>
+      <div class="ammo" id="p2Ammo"></div>
+    </div>
+  </div>
+
+  <div class="mobile-controls">
+    <div class="touch-pad left" id="p1Pad">
+      <div class="touch-row"><div class="touch-btn" data-action="p1-forward">↑</div></div>
+      <div class="touch-row"><div class="touch-btn" data-action="p1-left">◀</div><div class="touch-btn" data-action="p1-back">↓</div><div class="touch-btn" data-action="p1-right">▶</div></div>
+    </div>
+    <div class="touch-pad right" id="p2Pad">
+      <div class="touch-row"><div class="touch-btn" data-action="p2-forward">↑</div></div>
+      <div class="touch-row"><div class="touch-btn" data-action="p2-left">◀</div><div class="touch-btn" data-action="p2-back">↓</div><div class="touch-btn" data-action="p2-right">▶</div></div>
+    </div>
+    <div class="touch-shoot" id="p1Shoot">SHOOT</div>
+    <div class="touch-shoot" id="p2Shoot" style="right:auto;left:24px;bottom:170px;background:linear-gradient(180deg,#28c76f,#0fb86a)">SHOOT</div>
+  </div>
 </div>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+// Canvas setup
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
 
-// Players
-let p1 = { x:200, y:300, size:20, speed:4, color:'#00f', dx:0, dy:0, health:100 };
-let p2 = { x:700, y:300, size:20, speed:4, color:'#f00', dx:0, dy:0, health:100 };
+// Game constants
+const TANK_SIZE = 44;
+const TURRET_LEN = 28;
+const SPEED = 2.6;
+const ROT_SPEED = 0.07;
+const BULLET_SPEED = 7.5;
+const MAX_AMMO = 5;
+const RELOAD_TIME = 1500;
+const MAX_HEALTH = 100;
+const HIT_GLOW_MS = 220;
 
-let keys = {};
-let bullets = [];
-let gameLoopId;
+// Obstacles
+const obstacles = [
+  {x:220,y:120,w:160,h:48},{x:420,y:80,w:48,h:160},{x:720,y:120,w:160,h:48},
+  {x:420,y:280,w:360,h:48},{x:100,y:420,w:200,h:48},{x:900,y:420,w:200,h:48},
+  {x:440,y:480,w:320,h:48}
+];
 
-window.addEventListener("keydown", e => keys[e.key] = true);
-window.addEventListener("keyup",   e => keys[e.key] = false);
+let powerups = [];
+const POWERUP_TYPES = ['health','ammo','shield','speed','invisibility','rapidfire'];
+
+let running = true;
+let showHints = true;
+let animationId;
+let puTimer = 0;
+
+// Tanks
+function makeTank(x,y,angle,color){return {x,y,angle,vel:0,health:MAX_HEALTH,ammo:MAX_AMMO,lastReload:performance.now(),color,shield:0,speedMult:1,hitAt:0,effect:null,effectEnd:0};}
+
+function randomTankPosition(){for(let i=0;i<50;i++){const x=Math.random()*(W-160)+80;const y=Math.random()*(H-160)+80;if(!obstacles.some(o=>rectsOverlap(x-TANK_SIZE/2,y-TANK_SIZE/2,TANK_SIZE,TANK_SIZE,o.x,o.y,o.w,o.h))) return {x,y};}return {x:80,y:80};}
+
+let p1,p2;
+function initTanks(){
+  const pos1=randomTankPosition();
+  let pos2;
+  do{ pos2=randomTankPosition(); }while(Math.hypot(pos1.x-pos2.x,pos1.y-pos2.y)<200); // safe distance
+  p1=makeTank(pos1.x,pos1.y,Math.random()*Math.PI*2,'#30d07a');
+  p2=makeTank(pos2.x,pos2.y,Math.random()*Math.PI*2,'#ff6b6b');
+}
+
+// Bullets
+let bullets=[];
+
+// Input
+const keys = {};
+window.addEventListener('keydown', e => { if(e.repeat) return; keys[e.key]=true; if(e.key==='Shift') tryShoot(p1); if(e.key==='Enter') tryShoot(p2); });
+window.addEventListener('keyup', e => { keys[e.key]=false; });
+
+// Mobile touch buttons
+function setupTouchButtons(){
+  const map={'p1-forward':()=>keys['w']=true,'p1-back':()=>keys['s']=true,'p1-left':()=>keys['a']=true,'p1-right':()=>keys['d']=true,
+             'p2-forward':()=>keys['ArrowUp']=true,'p2-back':()=>keys['ArrowDown']=true,'p2-left':()=>keys['ArrowLeft']=true,'p2-right':()=>keys['ArrowRight']=true};
+  document.querySelectorAll('.touch-btn').forEach(btn=>{const act=btn.dataset.action;btn.addEventListener('touchstart', e=>{ e.preventDefault(); map[act]&&map[act](); });btn.addEventListener('touchend', e=>{ e.preventDefault(); if(act.startsWith('p1-')) keys['w']=keys['a']=keys['s']=keys['d']=false; else keys['ArrowUp']=keys['ArrowLeft']=keys['ArrowDown']=keys['ArrowRight']=false;});});
+  document.getElementById('p1Shoot').addEventListener('touchstart', e=>{ e.preventDefault(); tryShoot(p1); });
+  document.getElementById('p2Shoot').addEventListener('touchstart', e=>{ e.preventDefault(); tryShoot(p2); });
+}
+setupTouchButtons();
+
+// Restart
+function resetGame(){
+  cancelAnimationFrame(animationId);
+  initTanks();
+  bullets=[];
+  powerups=[];
+  running=true;
+  win(false);
+  puTimer=0;
+  last=performance.now();
+  for(let i=0;i<2;i++) spawnPowerup();
+  animationId=requestAnimationFrame(loop);
+}
+document.getElementById('restartBtn').addEventListener('click', resetGame);
+document.getElementById('restartOverlay').addEventListener('click', resetGame);
+
+// Hints toggle
+document.getElementById('toggleHints').addEventListener('click', ()=>{ showHints=!showHints; document.getElementById('toggleHints').textContent=showHints?'Hide Hints':'Show Hints'; });
 
 // Shooting
-window.addEventListener("keydown", e => {
-    if(e.key === " "){
-        bullets.push({ x:p1.x, y:p1.y, size:5, color:'#0ff', owner:1,
-            dx:p1.dx === 0 && p1.dy === 0 ? 5 : p1.dx * 2,
-            dy:p1.dx === 0 && p1.dy === 0 ? 0 : p1.dy * 2 });
+function tryShoot(tank){if(tank.ammo>0){tank.ammo--;bullets.push({x:tank.x+Math.cos(tank.angle)*(TANK_SIZE/2+6),y:tank.y+Math.sin(tank.angle)*(TANK_SIZE/2+6),angle:tank.angle,owner:tank,ttl:3000});}}
+
+// Collision helpers
+function rectsOverlap(x,y,w,h,x2,y2,w2,h2){ return x<w2+x2 && x+w>x2 && y<h2+y2 && y+h>y2; }
+function pointInRect(px,py,rx,ry,rw,rh){ return px>rx && px<rx+rw && py>ry && py<rh+ry; }
+
+// Bullets
+function updateBullets(dt){
+  for(let i=bullets.length-1;i>=0;i--){
+    const b=bullets[i];
+    b.x+=Math.cos(b.angle)*BULLET_SPEED;
+    b.y+=Math.sin(b.angle)*BULLET_SPEED;
+    b.ttl-=dt;
+    if(obstacles.some(o=>pointInRect(b.x,b.y,o.x,o.y,o.w,o.h))){ bullets.splice(i,1); continue; }
+    if(b.x<0||b.x>W||b.y<0||b.y>H){ bullets.splice(i,1); continue; }
+    const targets=[p1,p2];
+    for(const t of targets){
+      if(b.owner!==t){
+        if(pointInRect(b.x,b.y,t.x-TANK_SIZE/2,t.y-TANK_SIZE/2,TANK_SIZE,TANK_SIZE)){
+          if(t.shield>0){t.shield=Math.max(0,t.shield-1);}
+          else{ t.health=Math.max(0,t.health-14); t.hitAt=performance.now(); }
+          bullets.splice(i,1); break;
+        }
+      }
     }
-    if(e.key === "Enter"){
-        bullets.push({ x:p2.x, y:p2.y, size:5, color:'#f88', owner:2,
-            dx:p2.dx === 0 && p2.dy === 0 ? -5 : p2.dx * 2,
-            dy:p2.dx === 0 && p2.dy === 0 ? 0 : p2.dy * 2 });
+  }
+}
+
+// Reload
+function reloadTank(tank,now){ if(now-tank.lastReload>=RELOAD_TIME){ if(tank.ammo<MAX_AMMO) tank.ammo++; tank.lastReload=now; } }
+
+// Move
+function moveTank(tank, fKey, bKey, lKey, rKey, dt){
+  if(keys[lKey]) tank.angle-=ROT_SPEED*(tank.speedMult||1);
+  if(keys[rKey]) tank.angle+=ROT_SPEED*(tank.speedMult||1);
+  let nx=tank.x,ny=tank.y;
+  if(keys[fKey]){ nx+=Math.cos(tank.angle)*SPEED*(tank.speedMult||1); ny+=Math.sin(tank.angle)*SPEED*(tank.speedMult||1); }
+  if(keys[bKey]){ nx-=Math.cos(tank.angle)*SPEED*(tank.speedMult||1); ny-=Math.sin(tank.angle)*SPEED*(tank.speedMult||1); }
+  nx=Math.max(TANK_SIZE/2,Math.min(W-TANK_SIZE/2,nx));
+  ny=Math.max(TANK_SIZE/2,Math.min(H-TANK_SIZE/2,ny));
+  const coll=obstacles.some(o=>rectsOverlap(nx-TANK_SIZE/2,ny-TANK_SIZE/2,TANK_SIZE,TANK_SIZE,o.x,o.y,o.w,o.h));
+  if(!coll){tank.x=nx;tank.y=ny;}
+}
+
+// Powerups
+function spawnPowerup(){
+  const pad=60;
+  for(let i=0;i<30;i++){
+    const x=Math.random()*(W-2*pad)+pad;
+    const y=Math.random()*(H-2*pad)+pad;
+    if(!obstacles.some(o=>rectsOverlap(x-14,y-14,28,28,o.x,o.y,o.w,o.h))){
+      powerups.push({x,y,type:POWERUP_TYPES[Math.floor(Math.random()*POWERUP_TYPES.length)],ttl:15000});
+      return;
     }
+  }
+}
+function collectPowerups(){
+  for(let i=powerups.length-1;i>=0;i--){
+    const p=powerups[i];
+    if(Math.hypot(p1.x-p.x,p1.y-p.y)<40){ applyPowerup(p,p1); powerups.splice(i,1); continue; }
+    if(Math.hypot(p2.x-p.x,p2.y-p.y)<40){ applyPowerup(p,p2); powerups.splice(i,1); continue; }
+  }
+}
+function applyPowerup(p,tank){
+  const now=performance.now();
+  if(p.type==='health'){ tank.health=Math.min(MAX_HEALTH,tank.health+MAX_HEALTH*0.3); }
+  else if(p.type==='ammo'){ tank.effect='ammo'; tank.effectEnd=now+5000; tank.ammo=MAX_AMMO; tank.color='#f6c84c'; }
+  else if(p.type==='shield'){ tank.shield=1; tank.effect='shield'; tank.effectEnd=now+5000; }
+  else if(p.type==='speed'){ tank.effect='speed'; tank.speedMult=1.6; tank.effectEnd=now+5000; tank.color='#ff3f3f'; }
+  else if(p.type==='invisibility'){ tank.effect='invis'; tank.effectEnd=now+5000; }
+}
+
+// Update HUD
+function updateHUD(){
+  document.querySelector('#p1HealthBar .health-fill').style.width=(p1.health/MAX_HEALTH*100)+'%';
+  document.querySelector('#p2HealthBar .health-fill').style.width=(p2.health/MAX_HEALTH*100)+'%';
+  const p1AmmoDiv=document.getElementById('p1Ammo'); p1AmmoDiv.innerHTML='';
+  for(let i=0;i<MAX_AMMO;i++){ const c=document.createElement('div'); c.className='cell'; if(i<p1.ammo) c.classList.add('full'); p1AmmoDiv.appendChild(c);}
+  const p2AmmoDiv=document.getElementById('p2Ammo'); p2AmmoDiv.innerHTML='';
+  for(let i=0;i<MAX_AMMO;i++){ const c=document.createElement('div'); c.className='cell'; if(i<p2.ammo) c.classList.add('full'); p2AmmoDiv.appendChild(c);}
+  const pu=document.getElementById('powerupList'); pu.innerHTML=''; powerups.forEach(p=>{const el=document.createElement('div'); el.className='powerup'; el.textContent=p.type; pu.appendChild(el);});
+}
+
+// Win overlay
+function win(show){ const o=document.getElementById('winOverlay'); o.style.display=show?'flex':'none'; if(show){ document.getElementById('winText').textContent=(p1.health<=0?'Player 2 Wins!':'Player 1 Wins!'); }}
+
+// Drawing
+function drawTank(t){
+  ctx.save(); ctx.translate(t.x,t.y); ctx.rotate(t.angle);
+  ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.fillRect(-TANK_SIZE/2+4,TANK_SIZE/2-6,TANK_SIZE-8,10);
+  ctx.fillStyle=t.color; if(t.effect==='invis') ctx.globalAlpha=0.3; ctx.fillRect(-TANK_SIZE/2+4,-TANK_SIZE/2+4,TANK_SIZE-8,TANK_SIZE-8); ctx.globalAlpha=1;
+  ctx.fillStyle='#1b1d20'; ctx.fillRect(4,-6,TURRET_LEN,12);
+  ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(-TANK_SIZE/2,-TANK_SIZE/2-6,8,TANK_SIZE+12); ctx.fillRect(TANK_SIZE/2-8,-TANK_SIZE/2-6,8,TANK_SIZE+12);
+  if(t.shield>0){ ctx.strokeStyle='rgba(70,170,255,0.6)'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(0,0,TANK_SIZE/2+6,0,Math.PI*2); ctx.stroke(); }
+  const sinceHit=performance.now()-(t.hitAt||0);
+  if(sinceHit<HIT_GLOW_MS){ const a=1-(sinceHit/HIT_GLOW_MS); ctx.fillStyle=`rgba(255,255,255,${0.18*a})`; ctx.beginPath(); ctx.arc(0,0,TANK_SIZE/2+6+6*a,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+}
+function drawObstacles(){ ctx.fillStyle='#2b3238'; for(const o of obstacles){ ctx.fillRect(o.x,o.y,o.w,o.h); ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.strokeRect(o.x,o.y,o.w,o.h); }}
+function drawBullets(){ ctx.fillStyle='#fff'; for(const b of bullets){ ctx.beginPath(); ctx.arc(b.x,b.y,4,0,Math.PI*2); ctx.fill(); }}
+function drawPowerups(){ for(const p of powerups){ ctx.save(); ctx.translate(p.x,p.y); ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2); if(p.type==='health'){ ctx.fillStyle='#ff4b5c'; ctx.fill(); ctx.fillStyle='#fff'; ctx.fillRect(-4,-6,8,12); ctx.fillRect(-6,-2,12,4);} else if(p.type==='ammo'){ ctx.fillStyle='#f6c84c'; ctx.fill(); ctx.fillStyle='#fff'; ctx.fillRect(-6,-2,12,4);} else if(p.type==='shield'){ ctx.fillStyle='#7bdff6'; ctx.fill(); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fill();} else if(p.type==='speed'){ ctx.fillStyle='#ff3f3f'; ctx.fill();} else if(p.type==='invisibility'){ ctx.fillStyle='#8affff'; ctx.fill();} else{ ctx.fillStyle='#6ef08e'; ctx.fill(); } ctx.restore(); }}
+
+// Main loop
+let last=performance.now();
+function loop(now){
+  const dt=now-last; last=now;
+  if(!running) return;
+  puTimer+=dt; if(puTimer>6000){ spawnPowerup(); puTimer=0; }
+  for(let i=powerups.length-1;i>=0;i--){ powerups[i].ttl-=dt; if(powerups[i].ttl<=0) powerups.splice(i,1);}
+  moveTank(p1,'w','s','a','d',dt); moveTank(p2,'ArrowUp','ArrowDown','ArrowLeft','ArrowRight',dt);
+  updateBullets(dt);
+  reloadTank(p1,now); reloadTank(p2,now);
+  collectPowerups();
+  [p1,p2].forEach(t=>{if(t.effect && now>t.effectEnd){ if(t.effect==='speed') t.speedMult=1; if(t.effect==='ammo') t.color=t===p1?'#30d07a':'#ff6b6b'; t.effect=null; }});
+  updateHUD();
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#071018'; ctx.fillRect(0,0,W,H);
+  for(let gx=0;gx<W;gx+=80){ ctx.fillStyle='rgba(255,255,255,0.01)'; ctx.fillRect(gx,0,1,H);}
+  for(let gy=0;gy<H;gy+=80){ ctx.fillStyle='rgba(255,255,255,0.01)'; ctx.fillRect(0,gy,W,1);}
+  drawObstacles(); drawPowerups(); drawTank(p1); drawTank(p2); drawBullets();
+  if(p1.health<=0 || p2.health<=0){ win(true); running=false; return; }
+  animationId=requestAnimationFrame(loop);
+}
+
+// Initialize
+resetGame();
+
+// Click to shoot
+canvas.addEventListener('click', e=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left;
+  if(mx<W/2) tryShoot(p1); else tryShoot(p2);
 });
+canvas.addEventListener('contextmenu', e=>e.preventDefault());
 
-function movement(){
-    p1.dx = p1.dy = 0;
-    if(keys['w']||keys['W']) p1.dy = -p1.speed;
-    if(keys['s']||keys['S']) p1.dy =  p1.speed;
-    if(keys['a']||keys['A']) p1.dx = -p1.speed;
-    if(keys['d']||keys['D']) p1.dx =  p1.speed;
-
-    p2.dx = p2.dy = 0;
-    if(keys['ArrowUp'])    p2.dy = -p2.speed;
-    if(keys['ArrowDown'])  p2.dy =  p2.speed;
-    if(keys['ArrowLeft'])  p2.dx = -p2.speed;
-    if(keys['ArrowRight']) p2.dx =  p2.speed;
-
-    p1.x += p1.dx; p1.y += p1.dy;
-    p2.x += p2.dx; p2.y += p2.dy;
-
-    p1.x = Math.max(0, Math.min(900, p1.x));
-    p1.y = Math.max(0, Math.min(600, p1.y));
-    p2.x = Math.max(0, Math.min(900, p2.x));
-    p2.y = Math.max(0, Math.min(600, p2.y));
-}
-
-function updateBullets(){
-    bullets.forEach((b,i)=>{
-        b.x += b.dx;
-        b.y += b.dy;
-
-        // Out of bounds
-        if(b.x<0||b.x>900||b.y<0||b.y>600){ bullets.splice(i,1); return; }
-
-        // Collision
-        if(b.owner === 1){
-            let dist = Math.hypot(b.x - p2.x, b.y - p2.y);
-            if(dist < p2.size){ p2.health -= 10; bullets.splice(i,1); checkWin(); }
-        }
-        if(b.owner === 2){
-            let dist = Math.hypot(b.x - p1.x, b.y - p1.y);
-            if(dist < p1.size){ p1.health -= 10; bullets.splice(i,1); checkWin(); }
-        }
-    });
-}
-
-function draw(){
-    ctx.clearRect(0,0,900,600);
-
-    ctx.strokeStyle = '#0f0';
-    ctx.lineWidth = 0.2;
-    for(let i=0;i<900;i+=40){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,600); ctx.stroke(); }
-    for(let j=0;j<600;j+=40){ ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(900,j); ctx.stroke(); }
-
-    bullets.forEach(b => { ctx.fillStyle = b.color; ctx.fillRect(b.x-3, b.y-3, 6, 6); });
-
-    ctx.fillStyle = p1.color;
-    ctx.beginPath(); ctx.arc(p1.x, p1.y, p1.size, 0, Math.PI*2); ctx.fill();
-
-    ctx.fillStyle = p2.color;
-    ctx.beginPath(); ctx.arc(p2.x, p2.y, p2.size, 0, Math.PI*2); ctx.fill();
-
-    ctx.fillStyle = '#0f0';
-    ctx.font = "20px Arial";
-    ctx.fillText(`P1 Health: ${p1.health}`, 20, 30);
-    ctx.fillText(`P2 Health: ${p2.health}`, 720, 30);
-}
-
-function checkWin(){
-    if(p1.health <= 0) endGame("PLAYER 2 WINS!");
-    if(p2.health <= 0) endGame("PLAYER 1 WINS!");
-}
-
-function endGame(text){
-    document.getElementById("winnerText").textContent = text;
-    document.getElementById("overlay").style.display = "flex";
-    cancelAnimationFrame(gameLoopId);
-}
-
-function restart(){
-    p1 = { x:200, y:300, size:20, speed:4, color:'#00f', dx:0, dy:0, health:100 };
-    p2 = { x:700, y:300, size:20, speed:4, color:'#f00', dx:0, dy:0, health:100 };
-    bullets = [];
-    document.getElementById("overlay").style.display = "none";
-    loop();
-}
-
-function loop(){
-    movement();
-    updateBullets();
-    draw();
-    gameLoopId = requestAnimationFrame(loop);
-}
-
-loop();
 </script>
 </body>
 </html>
