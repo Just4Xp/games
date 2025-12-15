@@ -1,170 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Game Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-/* ===== BODY & BACKGROUND ===== */
+/* ================= RESET & BASE ================= */
+* { box-sizing: border-box; }
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    background: #000;
-    overflow-x: hidden;
-    color: #fff;
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Orbitron", "Segoe UI", sans-serif; /* MAIN UI FONT */
+  color: #eaeaea;
+  background: radial-gradient(circle at top, #0b0f1a, #05070c 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+  cursor: default; /* default cursor */
 }
 
-/* Star dots */
+/* ================= AURORA BACKGROUND ================= */
+#aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 15% 25%, rgba(80,120,255,0.12), transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(120,255,200,0.08), transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(180,180,255,0.06), transparent 40%);
+  animation: auroraMove 25s linear infinite;
+}
+
+@keyframes auroraMove {
+  0% { transform: translate(0px, 0px); }
+  50% { transform: translate(30px, -20px); }
+  100% { transform: translate(0px, 0px); }
+}
+
+/* ================= STARS ================= */
 #stars {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background: transparent;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  pointer-events: none;
 }
 
 .star {
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: white;
-    border-radius: 50%;
-    opacity: 0.8;
-    animation: twinkle 2s infinite alternate;
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: twinkle 2s infinite alternate;
 }
 
 @keyframes twinkle {
-    0% { opacity: 0.3; transform: scale(0.8); }
-    100% { opacity: 1; transform: scale(1.2); }
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
 }
 
-/* ===== HEADER ===== */
+/* ================= HEADER ================= */
 header {
-    position: relative;
-    margin-top: 50px;
-    text-align: center;
+  margin-top: 70px;
+  text-align: center;
 }
 
-h1 {
-    font-size: 3rem;
-    color: #00ffff; /* neon cyan */
-    text-shadow: 
-        0 0 5px #00ffff,
-        0 0 10px #00ffff,
-        0 0 20px #00ffff,
-        0 0 40px #0ff,
-        0 0 80px #0ff,
-        0 0 90px #0ff;
-    margin: 0;
+header h1 {
+  font-size: 3.2rem;
+  margin: 0;
+  letter-spacing: 3px;
+  color: #ffffff;
+  text-shadow: 0 0 25px rgba(120,150,255,0.35);
 }
 
-/* ===== GAME BUTTONS ===== */
+header p {
+  margin-top: 12px;
+  font-size: 1.05rem;
+  color: #d7e9ff;
+  opacity: 0.85;
+}
+
+/* ================= MAIN ================= */
+.main {
+  width: 100%;
+  max-width: 1100px;
+  margin: 60px auto 40px;
+  padding: 0 22px;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 32px;
+}
+
+/* ================= GAME CARDS ================= */
 .game-btn {
-    display: block;
-    width: 280px;
-    padding: 18px;
-    margin: 20px 0;
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-decoration: none;
-    text-align: center;
-    border-radius: 12px;
-    transition: 0.3s;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.6), 0 0 15px rgba(255,255,255,0.2) inset;
-    color: #fff;
-    border: 2px solid rgba(255,255,255,0.2);
+  position: relative;
+  padding: 30px 22px;
+  text-decoration: none;
+  border-radius: 22px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+  transition: all 0.35s ease;
 }
 
-/* Cosmic colors for buttons */
-.game-btn:nth-child(1) { background: linear-gradient(145deg, #111111, #222222); box-shadow: 0 0 15px #00ffff; }
-.game-btn:nth-child(2) { background: linear-gradient(145deg, #111111, #222222); box-shadow: 0 0 15px #ff1493; }
-.game-btn:nth-child(3) { background: linear-gradient(145deg, #111111, #222222); box-shadow: 0 0 15px #32cd32; }
-.game-btn:nth-child(4) { background: linear-gradient(145deg, #111111, #222222); box-shadow: 0 0 15px #ffa500; }
-.game-btn:nth-child(5) { background: linear-gradient(145deg, #111111, #222222); box-shadow: 0 0 15px #ffa500; }
-.game-btn:nth-child(6) { background: linear-gradient(145deg, #111111, #222222); box-shadow: 0 0 15px #ffa500; }
-.game-btn:nth-child(7) { background: linear-gradient(145deg, #111111, #222222); box-shadow: 0 0 15px #ffa500; }
-    
-/* Hover effect */
+.game-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.game-btn span.icon {
+  font-size: 2.4rem;
+  display: block;
+  margin-bottom: 14px;
+}
+
+.game-btn span.title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
 .game-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 25px rgba(255,255,255,0.8), 0 0 25px rgba(255,255,255,0.3) inset;
+  transform: translateY(-10px) scale(1.04);
+  box-shadow: 0 28px 70px rgba(0,0,0,0.65);
 }
 
-/* Floating animation for buttons */
-@keyframes floatButton {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-}
-.game-btn { animation: floatButton 4s ease-in-out infinite; }
+.game-btn:hover::after { opacity: 1; }
 
-/* ===== FOOTER ===== */
+/* ================= FOOTER ================= */
 footer {
-    margin-top: auto;
-    padding: 15px 0;
-    font-size: 0.9rem;
-    color: #ffffff88;
-    text-align: center;
+  margin-top: auto;
+  padding: 22px 0 26px;
+  font-size: 0.9rem;
+  font-family: "Inter", "Segoe UI", sans-serif; /* Footer font unchanged */
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.8px;
 }
 
-/* ===== RESPONSIVE ===== */
-@media(max-width: 500px){
-    .game-btn { width: 90%; font-size: 1rem; padding: 14px; }
+footer span {
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 520px) {
+  header h1 { font-size: 2.6rem; }
+  .game-btn { padding: 24px 18px; }
 }
 </style>
 </head>
 <body>
 
-<!-- Star background -->
+<div id="aurora"></div>
 <div id="stars"></div>
 
-<!-- Header -->
 <header>
-    <h1>🎮 Game Hub</h1>
+  <h1>🎮 Game Hub</h1>
+  <p>Built for fun, powered by curiosity</p>
 </header>
 
-<p>Play your favorite games!</p>
+<main class="main">
+  <section class="game-grid">
 
-<!-- Game Buttons -->
-<a href="./tic-tac-toe/index.html" class="game-btn">❌ Tic Tac Toe</a>
-<a href="./clicker/index.html" class="game-btn">🖱️ Clicker</a>
-<a href="./hand-cricket/index.html" class="game-btn">🏏 Hand Cricket</a>
-<a href="./rock-paper-scissors/index.html" class="game-btn">🪨 Rock Paper Scissors</a>
-<a href="./Space Rush/index.html" class="game-btn"> Space Rush</a>
-<a href="./2P-Tank-Arena/index.html" class="game-btn"> 2P-Tank-Arena</a>
-<a href="./Maze-Escape/index.html" class="game-btn">🧩 MAZE ESCAPE</a
-                                                                     
-<footer>Made with ❤️ | GitHub Game Hub</footer>
+    <a href="./tic-tac-toe/index.html" class="game-btn">
+      <span class="icon">❌</span>
+      <span class="title">Tic Tac Toe</span>
+    </a>
+
+    <a href="./clicker/index.html" class="game-btn">
+      <span class="icon">🖱️</span>
+      <span class="title">Clicker</span>
+    </a>
+
+    <a href="./hand-cricket/index.html" class="game-btn">
+      <span class="icon">🏏</span>
+      <span class="title">Hand Cricket</span>
+    </a>
+
+    <a href="./rock-paper-scissors/index.html" class="game-btn">
+      <span class="icon">🪨</span>
+      <span class="title">Rock Paper Scissors</span>
+    </a>
+
+    <a href="./Space Rush/index.html" class="game-btn">
+      <span class="icon">🚀</span>
+      <span class="title">Space Rush</span>
+    </a>
+
+    <a href="./2P-Tank-Arena/index.html" class="game-btn">
+      <span class="icon">🛡️</span>
+      <span class="title">2P Tank Arena</span>
+    </a>
+
+    <a href="./Maze-Escape/index.html" class="game-btn">
+      <span class="icon">🧩</span>
+      <span class="title">Maze Escape</span>
+    </a>
+
+  </section>
+</main>
+
+<footer>
+  <span>Made due to boredom… somehow turned into this 🎮✨</span>
+</footer>
 
 <script>
-// Generate random stars
-const starCount = 150;
+// Generate stars
+const starCount = 100;
 const starsContainer = document.getElementById('stars');
-for(let i=0;i<starCount;i++){
-    const star = document.createElement('div');
-    star.classList.add('star');
-    star.style.top = Math.random()*100 + '%';
-    star.style.left = Math.random()*100 + '%';
-    star.style.width = Math.random()*2 + 1 + 'px';
-    star.style.height = star.style.width;
-    star.style.animationDuration = (Math.random()*3+1) + 's';
-    starsContainer.appendChild(star);
+for (let i = 0; i < starCount; i++) {
+  const star = document.createElement('div');
+  star.classList.add('star');
+  star.style.top = Math.random() * 100 + '%';
+  star.style.left = Math.random() * 100 + '%';
+  star.style.width = Math.random() * 2 + 1 + 'px';
+  star.style.height = star.style.width;
+  star.style.animationDuration = (Math.random() * 3 + 1) + 's';
+  starsContainer.appendChild(star);
 }
 </script>
 
 </body>
 </html>
-
-
-
-
-
